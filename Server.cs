@@ -4,29 +4,53 @@ using System.Net.Sockets;
 using System.IO;
 using System.Text;
 
+
 public class Server
-{
-	public static void Main()
+{	
+	private static Server instance = null;
+	private static readonly object padlock = new object();
+
+	Server(){}
+
+	public static Server Instance
+	{
+		get
+		{
+			lock (padlock)
+			{
+				if (instance == null)
+					{
+					instance = new Server();
+					}
+				return instance;
+			}
+		}
+	}
+  
+	public void Execute()
 	{
 		try
 		{
-			//Setup a TCP socket and wait for a connection from a client
+			//Get the machine's local network address
 			IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
     		IPAddress ipAddr = ipHost.AddressList[0];
         	IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
 
-
+			//Setup socket & start listening for connections
 			TcpListener tcpListener = new TcpListener(localEndPoint);
 			tcpListener.Start();
 			Console.WriteLine("Server Started: {0}:5555", ipAddr);
 
+			//Blocking call, waiting for the client to conncet
 			TcpClient clientSocket = tcpListener.AcceptTcpClient();
 			Console.WriteLine("Client Connected");
 
+			//Setup full-duplex comminunication channels on this end
 			NetworkStream networkStream = clientSocket.GetStream();
 			StreamWriter streamWriter = new StreamWriter(networkStream);
 			StreamReader streamReader = new StreamReader(networkStream);
 
+			//Infinite request handler loop, terminates when it receives 'q' (for 'quit')
 			while(true)
 			{
 				string clientMsg = streamReader.ReadLine();
@@ -88,17 +112,18 @@ public class Server
 				streamWriter.Flush();	
 			}
 
-			//Perform cleanup actions
+			//Perform cleanup actions for graceful shutdown
 			streamReader.Close();
 			networkStream.Close();
 			streamWriter.Close();
+
 			clientSocket.Close();
 			Console.WriteLine("Shutting down server");
 		}
-
 		catch(Exception e)
 		{
 			Console.WriteLine(e.ToString());
 		}
 	}
 }
+

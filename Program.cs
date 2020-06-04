@@ -6,8 +6,8 @@ namespace consoleproject
     {
         static void Main(string[] args)
         {
-			string message = "Pickle Rick";
-            Console.WriteLine(message);
+			Server server = Server.Instance;
+			server.Execute();
         }
     }
 }
