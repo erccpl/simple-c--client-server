@@ -8,17 +8,21 @@ public class Client
 {
 	static void Main(string[] args)
 	{
-		string localHost = "127.0.0.1";
+		IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
+		IPAddress ipAddr = ipHost.AddressList[0]; 
+        IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
+	
 		TcpClient serverSocket;
 
 		try
 		{
-			serverSocket = new TcpClient(localHost, 5555);
+			serverSocket = new TcpClient();
+			serverSocket.Connect(localEndPoint);
 			Console.WriteLine("Connected to Server");
 		}
 		catch
 		{
-			Console.WriteLine("Failed to connect to {0}:5555", localHost);
+			Console.WriteLine("Failed to connect to {0}:5555", ipAddr);
 			return;
 		}
 
@@ -43,7 +47,8 @@ public class Client
 				Console.WriteLine(responseMsg);
 				while(streamreader.Peek() != -1) {
 					Console.WriteLine(streamreader.ReadLine());
-				}	
+				}
+				Console.WriteLine();	
 			}
 		}
 		catch

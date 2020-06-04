@@ -11,10 +11,14 @@ public class Server
 		try
 		{
 			//Setup a TCP socket and wait for a connection from a client
-			IPAddress localHost = IPAddress.Parse("127.0.0.1");
-			TcpListener tcpListener = new TcpListener(localHost, 5555);
+			IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
+    		IPAddress ipAddr = ipHost.AddressList[0];
+        	IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
+
+
+			TcpListener tcpListener = new TcpListener(localEndPoint);
 			tcpListener.Start();
-			Console.WriteLine("Server Started");
+			Console.WriteLine("Server Started: {0}:5555", ipAddr);
 
 			TcpClient clientSocket = tcpListener.AcceptTcpClient();
 			Console.WriteLine("Client Connected");
@@ -53,7 +57,7 @@ public class Server
 						string path = args[1];
 						try 
 						{
-							DirectoryInfo dirInfo = new DirectoryInfo(@path);
+							DirectoryInfo dirInfo = new DirectoryInfo(path);
 							foreach (DirectoryInfo di in dirInfo.GetDirectories())
 							{
 								streamWriter.WriteLine(di);
