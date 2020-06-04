@@ -34,15 +34,14 @@ public class Client
 				streamwriter.WriteLine(serverMsg);
 				streamwriter.Flush();
 
-				if(serverMsg.ToLower().Equals("q")){
+				if(serverMsg.ToLower().Equals("q"))
 					break;
-				}
-
+				
 				string responseMsg = streamreader.ReadLine();
 				Console.WriteLine(responseMsg);
-				while(streamreader.Peek() != -1) {
+				while(streamreader.Peek() != -1) 
 					Console.WriteLine(streamreader.ReadLine());
-				}
+				
 				Console.WriteLine();	
 			}
 

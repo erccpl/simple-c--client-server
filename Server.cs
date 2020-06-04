@@ -19,9 +19,7 @@ public class Server
 			lock (padlock)
 			{
 				if (instance == null)
-					{
 					instance = new Server();
-					}
 				return instance;
 			}
 		}
@@ -41,7 +39,7 @@ public class Server
 			tcpListener.Start();
 			Console.WriteLine("Server Started: {0}:5555", ipAddr);
 
-			//Blocking call, waiting for the client to conncet
+			//Blocking call, waiting for the client to connect
 			TcpClient clientSocket = tcpListener.AcceptTcpClient();
 			Console.WriteLine("Client Connected");
 
@@ -51,31 +49,27 @@ public class Server
 			StreamReader streamReader = new StreamReader(networkStream);
 
 			//Infinite request handler loop, terminates when it receives 'q' (for 'quit')
-			while(true)
+			while(clientSocket.Connected)
 			{
 				string clientMsg = streamReader.ReadLine();
 
 				//1. Reply with simple hello
-				if( clientMsg.ToLower().Equals("hello") )
-				{
+				if(clientMsg.ToLower().Equals("hello"))
 					streamWriter.WriteLine("Hi");
-				}
-
+	
 				//2. Reply with the time in UTC format
-				else if( clientMsg.ToLower().Equals("time") )
+				else if(clientMsg.ToLower().Equals("time"))
 				{
 					DateTime currentUTCTime = DateTime.UtcNow;
 					streamWriter.WriteLine(currentUTCTime);
 				}
-
+				
 				//3. Reply with contents of specified directory
-				else if( clientMsg.ToLower().StartsWith("dir") )
+				else if(clientMsg.ToLower().StartsWith("dir"))
 				{
 					string[] args = clientMsg.Split(" ");
 					if(args.Length != 2) 
-					{
 						streamWriter.WriteLine("Please check inputs for dir command");
-					} 
 					else 
 					{
 						string path = args[1];
@@ -83,13 +77,9 @@ public class Server
 						{
 							DirectoryInfo dirInfo = new DirectoryInfo(path);
 							foreach (DirectoryInfo di in dirInfo.GetDirectories())
-							{
 								streamWriter.WriteLine(di);
-							}
 							foreach(FileInfo fi in dirInfo.GetFiles())
-							{
 								streamWriter.WriteLine(fi);
-							}
 						} 
 						catch(DirectoryNotFoundException) 
 						{	
@@ -99,7 +89,7 @@ public class Server
 				}
 
 				//4. Graceful exit
-				else if( clientMsg.ToLower().Equals("q") )
+				else if(clientMsg.ToLower().Equals("q"))
 				{
 					break;
 				}
@@ -119,6 +109,10 @@ public class Server
 
 			clientSocket.Close();
 			Console.WriteLine("Shutting down server");
+		}
+		catch(NullReferenceException)
+		{
+			Console.WriteLine("Client exited unexpectedly");
 		}
 		catch(Exception e)
 		{
