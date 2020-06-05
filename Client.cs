@@ -31,20 +31,15 @@ public class Client
 			{
 				Console.Write("> ");
 				string serverMsg = Console.ReadLine();
-				if(serverSocket.Connected)	
-				{		
-					streamWriter.WriteLine(serverMsg);
-					streamWriter.Flush();
-				}
-				else
-					break;	
+				streamWriter.WriteLine(serverMsg);
+				streamWriter.Flush();
 				
-
 				if(serverMsg.ToLower().Equals("q"))
 					break;
 				
 				string responseMsg = streamReader.ReadLine();
-				if(responseMsg.Equals("end")){
+				if(responseMsg == null){
+					Console.WriteLine("The server has been shut down");
 					break;
 				}
 
@@ -56,10 +51,10 @@ public class Client
 			}
 		}
 		catch (System.IO.IOException) {
-			Console.WriteLine("The server socket has been shutdown");
+			Console.WriteLine("IOException: The server socket has been shutdown");
 		}
 		catch (NullReferenceException) {
-			Console.WriteLine("The server socket has been shutdown");
+			Console.WriteLine("NullRefException: The server socket has been shutdown");
 		}
 		catch(Exception e)
 		{

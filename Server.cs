@@ -41,20 +41,6 @@ public class Server
 		Console.WriteLine("Server Started: {0}:5555", ipAddr);
 		
 		TcpClient clientSocket = default(TcpClient);
-
- 		List<ClientHandler> clientHandlers = new List<ClientHandler>();
-
-	
-		Console.CancelKeyPress += delegate {
-			Console.WriteLine("Ctrl+C detected: shutting down main server thread");
-			clientSocket.Dispose();
-			tcpListener.Stop();
-			foreach (ClientHandler c in clientHandlers)
-			{
-				Console.WriteLine("Found thread");
-				c.shutDownClientThread();
-			}
-		};
 		
 		int counter = 0;
 		while(true) 
@@ -63,7 +49,6 @@ public class Server
 			clientSocket = tcpListener.AcceptTcpClient();
 			Console.WriteLine("Client {0} connected", counter);
 			ClientHandler client = new ClientHandler();
-			clientHandlers.Add(client);
 			client.startClient(clientSocket, counter);
 		}
 	}
@@ -73,21 +58,14 @@ public class Server
         TcpClient clientSocket;
         int clientNumber;
 
-		Thread clientThread;
         public void startClient(TcpClient clientSocket, int clientNumber)
         {
             this.clientSocket = clientSocket;
             this.clientNumber = clientNumber;
-            clientThread = new Thread(processRequests);
+            Thread clientThread = new Thread(processRequests);
 			clientThread.IsBackground = true;
             clientThread.Start();
         }
-
-		public void shutDownClientThread()
-		{
-			Console.WriteLine("got called");
-			this.clientThread.Abort();
-		}
 
         private void processRequests()
         {
@@ -160,22 +138,13 @@ public class Server
 			catch(NullReferenceException){
 				Console.WriteLine("Client {0} shut down unexpectedly, closing connection", this.clientNumber);
 			}
-			// catch(ThreadAbortException) {
-			// 	Console.WriteLine("THREAD IS BEING KILLED");
-			// 	streamReader.Close();
-			// 	streamWriter.Close();
-			// 	networkStream.Close();
-
-			// 	clientSocket.Close();
-			// }
 			catch (Exception ex)
 			{
-				Console.WriteLine(" >> " + ex.ToString());
+				Console.WriteLine(ex.ToString());
 			}
 			finally
 			{
-				streamWriter.Write("end");
-				networkStream.Close();
+				networkStream.Close(0);
 				streamReader.Close();
 				streamWriter.Close();
 			
