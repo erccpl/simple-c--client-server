@@ -2,9 +2,8 @@ using System;
 using System.Net;
 using System.Net.Sockets; 
 using System.IO;
-using System.Text;
 using System.Threading;
-using System.Diagnostics;
+using System.Collections.Generic;
 
 
 public class Server
@@ -43,10 +42,18 @@ public class Server
 		
 		TcpClient clientSocket = default(TcpClient);
 
+ 		List<ClientHandler> clientHandlers = new List<ClientHandler>();
+
+	
 		Console.CancelKeyPress += delegate {
 			Console.WriteLine("Ctrl+C detected: shutting down main server thread");
-			clientSocket.Close();
+			clientSocket.Dispose();
 			tcpListener.Stop();
+			foreach (ClientHandler c in clientHandlers)
+			{
+				Console.WriteLine("Found thread");
+				c.shutDownClientThread();
+			}
 		};
 		
 		int counter = 0;
@@ -56,6 +63,7 @@ public class Server
 			clientSocket = tcpListener.AcceptTcpClient();
 			Console.WriteLine("Client {0} connected", counter);
 			ClientHandler client = new ClientHandler();
+			clientHandlers.Add(client);
 			client.startClient(clientSocket, counter);
 		}
 	}
@@ -64,24 +72,33 @@ public class Server
     {
         TcpClient clientSocket;
         int clientNumber;
+
+		Thread clientThread;
         public void startClient(TcpClient clientSocket, int clientNumber)
         {
             this.clientSocket = clientSocket;
             this.clientNumber = clientNumber;
-            Thread clientThread = new Thread(processRequests);
+            clientThread = new Thread(processRequests);
 			clientThread.IsBackground = true;
             clientThread.Start();
         }
+
+		public void shutDownClientThread()
+		{
+			Console.WriteLine("got called");
+			this.clientThread.Abort();
+		}
+
         private void processRequests()
         {
 			NetworkStream networkStream = clientSocket.GetStream();
 			StreamWriter streamWriter = new StreamWriter(networkStream);
 			StreamReader streamReader = new StreamReader(networkStream);
 
-            while (true)
-            {
-                try
-                {
+			try
+			{
+				while (true)
+				{
 					string clientMsg = streamReader.ReadLine();
 
 					//1. Reply with simple hello
@@ -131,24 +148,43 @@ public class Server
 						streamWriter.WriteLine("Unrecognized/unsupported command");
 					}
 					streamWriter.Flush();	
-                }
-				catch(NullReferenceException){
-					Console.WriteLine("Client {0} shut down unexpectedly, closing connection", this.clientNumber);
-					break;
 				}
-                catch (Exception ex)
-                {
-                    Console.WriteLine(" >> " + ex.ToString());
-                }
-            }
 
-			streamReader.Close();
-			streamWriter.Close();
-			networkStream.Close();
+				streamReader.Close();
+				streamWriter.Close();
+				networkStream.Close();
 
-			clientSocket.Close();
-			Console.WriteLine("Shutting down connection to client {0}", this.clientNumber);
+				clientSocket.Close();
+				Console.WriteLine("Shutting down connection to client {0}", this.clientNumber);
+			}
+			catch(NullReferenceException){
+				Console.WriteLine("Client {0} shut down unexpectedly, closing connection", this.clientNumber);
+			}
+			// catch(ThreadAbortException) {
+			// 	Console.WriteLine("THREAD IS BEING KILLED");
+			// 	streamReader.Close();
+			// 	streamWriter.Close();
+			// 	networkStream.Close();
+
+			// 	clientSocket.Close();
+			// }
+			catch (Exception ex)
+			{
+				Console.WriteLine(" >> " + ex.ToString());
+			}
+			finally
+			{
+				streamWriter.Write("end");
+				networkStream.Close();
+				streamReader.Close();
+				streamWriter.Close();
+			
+				clientSocket.Dispose();
+				clientSocket.Close();	
+			}
         }
-    } 
-}
+
+    }
+} 
+
 
