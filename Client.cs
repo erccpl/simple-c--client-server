@@ -8,51 +8,60 @@ public class Client
 {
 	static void Main(string[] args)
 	{
-		try
-		{
-			//Get the machine's local network address
-			IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
-			IPAddress ipAddr = ipHost.AddressList[0]; 
-			IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
-		
-			//Setup the socket on the client side
-			TcpClient serverSocket;
-			serverSocket = new TcpClient();
-			serverSocket.Connect(localEndPoint);
-			Console.WriteLine("Connected to Server");
+		//Get the machine's local network address
+		IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
+		IPAddress ipAddr = ipHost.AddressList[0]; 
+		IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
+	
+		//Setup the socket on the client side
+		TcpClient serverSocket;
+		serverSocket = new TcpClient();
+		serverSocket.Connect(localEndPoint);
+		Console.WriteLine("Connected to Server");
 
-			//Setup full-duplex comminunication channels on this end
-			NetworkStream networkStream = serverSocket.GetStream();
-			StreamReader streamreader = new StreamReader(networkStream);
-			StreamWriter streamwriter = new StreamWriter(networkStream);
-		
+		//Setup full-duplex comminunication channels on this end
+		NetworkStream networkStream = serverSocket.GetStream();
+		StreamReader streamReader = new StreamReader(networkStream);
+		StreamWriter streamWriter = new StreamWriter(networkStream);
+
+		try
+		{	
 			//Infinite request handler loop, terminates when user input 'q'
 			while(true)
 			{
 				Console.Write("> ");
-				string serverMsg = Console.ReadLine();			
-				streamwriter.WriteLine(serverMsg);
-				streamwriter.Flush();
+				string serverMsg = Console.ReadLine();
+				if(streamWriter.BaseStream != null)	
+				{		
+					streamWriter.WriteLine(serverMsg);
+					streamWriter.Flush();
+				}
+				else
+					break;	
+				
 
 				if(serverMsg.ToLower().Equals("q"))
 					break;
 				
-				string responseMsg = streamreader.ReadLine();
+				string responseMsg = streamReader.ReadLine();
 				Console.WriteLine(responseMsg);
-				while(streamreader.Peek() != -1) 
-					Console.WriteLine(streamreader.ReadLine());
+				while(streamReader.Peek() != -1) 
+					Console.WriteLine(streamReader.ReadLine());
 				
 				Console.WriteLine();	
 			}
-
-			//Cleanup and graceful shutdown
-			streamreader.Close();
-			networkStream.Close();
-			streamwriter.Close();
+		}
+		catch (System.IO.IOException) {
+			Console.WriteLine("The server socket has been shutdown");
 		}
 		catch(Exception e)
 		{
 			Console.WriteLine(e.ToString());
+		}
+		finally {
+			networkStream.Close();
+			streamReader.Close();
+			streamWriter.Close();
 		}
 	}
 } 
