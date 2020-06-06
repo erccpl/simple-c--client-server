@@ -7,7 +7,7 @@ using System.Threading;
 
 public class Server
 {	
-	private static Server instance = null;
+	private static Server _instance = null;
 	private static readonly object padlock = new object();
 
 	Server(){}
@@ -18,9 +18,9 @@ public class Server
 		{
 			lock (padlock)
 			{
-				if (instance == null)
-					instance = new Server();
-				return instance;
+				if (_instance == null)
+					_instance = new Server();
+				return _instance;
 			}
 		}
 	}
@@ -40,7 +40,6 @@ public class Server
 		Console.WriteLine("Server Started: {0}:{1}", ipAddr, portNum);
 		
 		TcpClient clientSocket = default(TcpClient);
-		
 		int counter = 0;
 		while(true) 
 		{

@@ -14,11 +14,10 @@ public class Client
 		IPAddress ipAddr = ipHost.AddressList[0]; 
 		IPEndPoint localEndPoint = new IPEndPoint(ipAddr, portNum);
 
-		TcpClient serverSocket = default;
+		TcpClient serverSocket = new TcpClient();
 		try
 		{
 			//Setup the socket on the client side
-			serverSocket = new TcpClient();
 			serverSocket.Connect(localEndPoint);
 			Console.WriteLine("Connected to Server @{0}:{1}", ipAddr, portNum);
 
@@ -39,7 +38,7 @@ public class Client
 					break;
 				
 				string responseMsg = streamReader.ReadLine();
-				if(responseMsg == null){
+				if(responseMsg == null) {
 					Console.WriteLine("The server has been shut down");
 					break;
 				}
@@ -55,7 +54,7 @@ public class Client
 		{
 			Console.Error.WriteLine("Error: connection refused (is the server started?)");
 		}
-		catch (System.IO.IOException) 
+		catch (IOException) 
 		{
 			Console.WriteLine("IOException: The server socket has been shutdown");
 		}
