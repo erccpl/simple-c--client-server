@@ -25,19 +25,19 @@ public class Server
 		}
 	}
   
-
-
 	public void Execute()
 	{
-		//Get the machine's local network address
+		int portNum = 5555;
+
+		//Get the machine's local network address and create server address
 		IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
 		IPAddress ipAddr = ipHost.AddressList[0];
-		IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
+		IPEndPoint localEndPoint = new IPEndPoint(ipAddr, portNum);
 
 		//Setup socket & start listening for connections
 		TcpListener tcpListener = new TcpListener(localEndPoint);
 		tcpListener.Start();
-		Console.WriteLine("Server Started: {0}:5555", ipAddr);
+		Console.WriteLine("Server Started: {0}:{1}", ipAddr, portNum);
 		
 		TcpClient clientSocket = default(TcpClient);
 		
@@ -127,10 +127,6 @@ public class Server
 					streamWriter.Flush();	
 				}
 
-				streamReader.Close();
-				streamWriter.Close();
-				networkStream.Close();
-
 				clientSocket.Close();
 				Console.WriteLine("Shutting down connection to client {0}", this.clientNumber);
 			}
@@ -143,11 +139,6 @@ public class Server
 			}
 			finally
 			{
-				networkStream.Close(0);
-				streamReader.Close();
-				streamWriter.Close();
-			
-				clientSocket.Dispose();
 				clientSocket.Close();	
 			}
         }

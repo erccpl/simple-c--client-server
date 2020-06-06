@@ -7,18 +7,20 @@ public class Client
 {
 	static void Main(string[] args)
 	{
+		int portNum = 5555;
+
 		//Get the machine's local network address
 		IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
 		IPAddress ipAddr = ipHost.AddressList[0]; 
-		IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 5555);
+		IPEndPoint localEndPoint = new IPEndPoint(ipAddr, portNum);
 
-		TcpClient serverSocket = null;
+		TcpClient serverSocket = default;
 		try
 		{
 			//Setup the socket on the client side
 			serverSocket = new TcpClient();
 			serverSocket.Connect(localEndPoint);
-			Console.WriteLine("Connected to Server");
+			Console.WriteLine("Connected to Server @{0}:{1}", ipAddr, portNum);
 
 			//Setup full-duplex comminunication channels on this end
 			NetworkStream networkStream = serverSocket.GetStream();
