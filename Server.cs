@@ -10,7 +10,7 @@ public class Server
 	private static Server _instance = null;
 	private static readonly object padlock = new object();
 
-	Server(){}
+	private Server(){}
 
 	public static Server Instance
 	{
