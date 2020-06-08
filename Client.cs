@@ -39,7 +39,7 @@ public class Client
 				
 				string responseMsg = streamReader.ReadLine();
 				if(responseMsg == null) {
-					Console.WriteLine("The server has been shut down");
+					Console.WriteLine("Connection to the server has been shut down");
 					break;
 				}
 

@@ -109,6 +109,10 @@ public class Server
 							{	
 								streamWriter.WriteLine("Directory does not exist");
 							}
+							catch(UnauthorizedAccessException) 
+							{	
+								streamWriter.WriteLine("Server does not have permission to access this directory");
+							}
 						}
 					}
 
