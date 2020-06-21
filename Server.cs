@@ -28,7 +28,7 @@ public class Server
 	public void Execute()
 	{
 		int portNum = 5555;
-
+		
 		//Get the machine's local network address and create server address
 		IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName()); 
 		IPAddress ipAddr = ipHost.AddressList[0];
@@ -115,14 +115,10 @@ public class Server
 							}
 						}
 					}
-
-					//4. Graceful exit
 					else if(clientMsg.ToLower().Equals("q"))
 					{
 						break;
 					}
-
-					//5. Unknown command
 					else 
 					{
 						streamWriter.WriteLine("Unrecognized/unsupported command");
